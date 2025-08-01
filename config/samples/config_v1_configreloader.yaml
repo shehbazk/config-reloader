@@ -1,0 +1,9 @@
+apiVersion: config.config.dev/v1
+kind: ConfigReloader
+metadata:
+  labels:
+    app.kubernetes.io/name: config-reloader
+    app.kubernetes.io/managed-by: kustomize
+  name: configreloader-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- config_v1_configreloader.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
