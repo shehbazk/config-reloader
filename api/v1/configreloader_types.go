@@ -1,67 +1,112 @@
-/*
-Copyright 2025.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // ConfigReloaderSpec defines the desired state of ConfigReloader
 type ConfigReloaderSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
-
-	// foo is an example field of ConfigReloader. Edit configreloader_types.go to remove/update
+	// ConfigMaps to watch for changes
 	// +optional
-	Foo *string `json:"foo,omitempty"`
+	ConfigMaps []ResourceRef `json:"configMaps,omitempty"`
+
+	// Secrets to watch for changes
+	// +optional
+	Secrets []ResourceRef `json:"secrets,omitempty"`
+
+	// Selector for pods to restart when config changes
+	Selector *metav1.LabelSelector `json:"selector,omitempty"`
+
+	// RestartPolicy defines how to restart pods
+	// +kubebuilder:validation:Enum=annotation;delete
+	// +kubebuilder:default=annotation
+	RestartPolicy RestartPolicy `json:"restartPolicy,omitempty"`
+
+	// IgnoreOwnerReferences ignores pods that are owned by controllers
+	// +kubebuilder:default=false
+	IgnoreOwnerReferences bool `json:"ignoreOwnerReferences,omitempty"`
 }
 
-// ConfigReloaderStatus defines the observed state of ConfigReloader.
+// ResourceRef references a ConfigMap or Secret
+type ResourceRef struct {
+	// Name of the resource
+	Name string `json:"name"`
+
+	// Namespace of the resource (defaults to same namespace as ConfigReloader)
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
+}
+
+// RestartPolicy defines restart strategies
+// +kubebuilder:validation:Enum=annotation;delete
+type RestartPolicy string
+
+const (
+	// RestartPolicyAnnotation restarts pods by updating annotations
+	RestartPolicyAnnotation RestartPolicy = "annotation"
+	// RestartPolicyDelete restarts pods by deleting them
+	RestartPolicyDelete RestartPolicy = "delete"
+)
+
+// ConfigReloaderStatus defines the observed state of ConfigReloader
 type ConfigReloaderStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Conditions represent the latest available observations
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// LastReloadTime indicates when the last reload occurred
+	// +optional
+	LastReloadTime *metav1.Time `json:"lastReloadTime,omitempty"`
+
+	// WatchedResources shows currently watched ConfigMaps and Secrets
+	// +optional
+	WatchedResources []WatchedResource `json:"watchedResources,omitempty"`
+
+	// PodsRestarted tracks recently restarted pods
+	// +optional
+	PodsRestarted []PodRestart `json:"podsRestarted,omitempty"`
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
+// WatchedResource represents a resource being watched
+type WatchedResource struct {
+	// Kind of resource (ConfigMap or Secret)
+	Kind string `json:"kind"`
+	// Name of the resource
+	Name string `json:"name"`
+	// Namespace of the resource
+	Namespace string `json:"namespace"`
+	// LastUpdateTime when this resource was last updated
+	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
+}
+
+// PodRestart tracks a pod restart event
+type PodRestart struct {
+	// PodName that was restarted
+	PodName string `json:"podName"`
+	// Namespace of the pod
+	Namespace string `json:"namespace"`
+	// RestartTime when the restart occurred
+	RestartTime *metav1.Time `json:"restartTime"`
+	// Reason for the restart
+	Reason string `json:"reason"`
+}
+
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=cr
+//+kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+//+kubebuilder:printcolumn:name="Last Reload",type="string",JSONPath=".status.lastReloadTime"
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ConfigReloader is the Schema for the configreloaders API
 type ConfigReloader struct {
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// metadata is a standard object metadata
-	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty,omitzero"`
-
-	// spec defines the desired state of ConfigReloader
-	// +required
-	Spec ConfigReloaderSpec `json:"spec"`
-
-	// status defines the observed state of ConfigReloader
-	// +optional
-	Status ConfigReloaderStatus `json:"status,omitempty,omitzero"`
+	Spec   ConfigReloaderSpec   `json:"spec,omitempty"`
+	Status ConfigReloaderStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // ConfigReloaderList contains a list of ConfigReloader
 type ConfigReloaderList struct {
