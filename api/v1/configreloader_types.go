@@ -74,6 +74,8 @@ type WatchedResource struct {
 	Name string `json:"name"`
 	// Namespace of the resource
 	Namespace string `json:"namespace"`
+	// ResourceVersion of the last seen version
+	ResourceVersion string `json:"resourceVersion,omitempty"`
 	// LastUpdateTime when this resource was last updated
 	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
 }
@@ -90,12 +92,12 @@ type PodRestart struct {
 	Reason string `json:"reason"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:resource:shortName=cr
-//+kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
-//+kubebuilder:printcolumn:name="Last Reload",type="string",JSONPath=".status.lastReloadTime"
-//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=cr
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="Last Reload",type="string",JSONPath=".status.lastReloadTime"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ConfigReloader is the Schema for the configreloaders API
 type ConfigReloader struct {
@@ -106,7 +108,7 @@ type ConfigReloader struct {
 	Status ConfigReloaderStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // ConfigReloaderList contains a list of ConfigReloader
 type ConfigReloaderList struct {
