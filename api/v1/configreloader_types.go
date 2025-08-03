@@ -42,7 +42,8 @@ type ResourceRef struct {
 type RestartPolicy string
 
 const (
-	RestartPolicyDelete RestartPolicy = "delete"
+	RestartPolicyAnnotation RestartPolicy = "annotation"
+	RestartPolicyDelete     RestartPolicy = "delete"
 )
 
 // ConfigReloaderStatus defines the observed state of ConfigReloader
