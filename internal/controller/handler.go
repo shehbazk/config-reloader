@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"context"
@@ -80,8 +80,7 @@ func (h *ConfigMapSecretHandler) enqueueConfigReloaders(ctx context.Context, obj
 	}
 }
 
-func (h *ConfigMapSecretHandler) configReloaderWatchesResource(cr *configv1.ConfigReloader,
-	resourceKind, resourceName, resourceNamespace string) bool {
+func (h *ConfigMapSecretHandler) configReloaderWatchesResource(cr *configv1.ConfigReloader, resourceKind, resourceName, resourceNamespace string) bool {
 	if resourceKind == "ConfigMap" {
 		for _, cmRef := range cr.Spec.ConfigMaps {
 			namespace := cmRef.Namespace
