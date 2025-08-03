@@ -1,4 +1,4 @@
-apiVersion: config.config.dev/v1
+apiVersion: config.dev/v1
 kind: ConfigReloader
 metadata:
   labels:
@@ -6,4 +6,11 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: configreloader-sample
 spec:
-  # TODO(user): Add fields here
+  ignoreOwnerReferences: true
+  configMaps:
+    - name: demo-config
+      namespace: default
+  selector:
+    matchLabels:
+      app: demo-deployment
+  restartPolicy: delete

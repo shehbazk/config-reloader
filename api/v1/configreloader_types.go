@@ -42,9 +42,6 @@ type ResourceRef struct {
 type RestartPolicy string
 
 const (
-	// RestartPolicyAnnotation restarts pods by updating annotations
-	RestartPolicyAnnotation RestartPolicy = "annotation"
-	// RestartPolicyDelete restarts pods by deleting them
 	RestartPolicyDelete RestartPolicy = "delete"
 )
 

@@ -14,13 +14,13 @@ metadata:
   name: configreloader-admin-role
 rules:
 - apiGroups:
-  - config.config.dev
+  - config.dev
   resources:
   - configreloaders
   verbs:
   - '*'
 - apiGroups:
-  - config.config.dev
+  - config.dev
   resources:
   - configreloaders/status
   verbs:

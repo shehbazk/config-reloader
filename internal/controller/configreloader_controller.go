@@ -151,7 +151,6 @@ func (r *ConfigReloaderReconciler) hasResourceChanged(
 	// First time seeing this resource, so it's "changed" (new)
 	return true
 }
-
 func (r *ConfigReloaderReconciler) restartAffectedPods(ctx context.Context,
 	cr *configv1.ConfigReloader) ([]configv1.PodRestart, error) {
 	logger := log.FromContext(ctx)
@@ -180,38 +179,23 @@ func (r *ConfigReloaderReconciler) restartAffectedPods(ctx context.Context,
 	now := metav1.Now()
 
 	for _, pod := range podList.Items {
-		// Skip pods owned by controllers if configured
-		if !cr.Spec.IgnoreOwnerReferences && len(pod.OwnerReferences) > 0 {
-			if !r.podUsesWatchedResources(&pod, watchedCMs, watchedSecrets) {
-				continue
-			}
+		// Check if pod uses watched resources
+		if !r.podUsesWatchedResources(&pod, watchedCMs, watchedSecrets) {
+			continue
 		}
 
-		logger.Info("Restarting pod", "pod", pod.Name, "namespace", pod.Namespace)
+		logger.Info("Deleting pod for restart", "pod", pod.Name, "namespace", pod.Namespace)
 
-		switch cr.Spec.RestartPolicy {
-		case configv1.RestartPolicyAnnotation:
-			if pod.Annotations == nil {
-				pod.Annotations = make(map[string]string)
-			}
-			pod.Annotations[ReloadAnnotation] = now.Format(time.RFC3339)
-
-			if err := r.Update(ctx, &pod); err != nil {
-				logger.Error(err, "failed to update pod annotation", "pod", pod.Name)
-				continue
-			}
-		case configv1.RestartPolicyDelete:
-			if err := r.Delete(ctx, &pod); err != nil {
-				logger.Error(err, "failed to delete pod", "pod", pod.Name)
-				continue
-			}
+		if err := r.Delete(ctx, &pod); err != nil {
+			logger.Error(err, "failed to delete pod", "pod", pod.Name)
+			continue
 		}
 
 		restartedPods = append(restartedPods, configv1.PodRestart{
 			PodName:     pod.Name,
 			Namespace:   pod.Namespace,
 			RestartTime: &now,
-			Reason:      "ConfigMap/Secret changed",
+			Reason:      "ConfigMap/Secret changed - pod deleted",
 		})
 	}
 

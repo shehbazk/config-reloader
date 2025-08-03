@@ -10,8 +10,8 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
-  namespace: system
+  name: config-reloader-controller-manager
+  namespace: config-reloader-system
   labels:
     control-plane: controller-manager
     app.kubernetes.io/name: config-reloader
@@ -63,7 +63,7 @@ spec:
         args:
           - --leader-elect
           - --health-probe-bind-address=:8081
-        image: controller:latest
+        image: localhost:5000/controller:latest
         name: manager
         ports: []
         securityContext:
@@ -95,5 +95,5 @@ spec:
             memory: 64Mi
         volumeMounts: []
       volumes: []
-      serviceAccountName: controller-manager
+      serviceAccountName: config-reloader-controller-manager
       terminationGracePeriodSeconds: 10

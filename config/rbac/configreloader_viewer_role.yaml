@@ -14,7 +14,7 @@ metadata:
   name: configreloader-viewer-role
 rules:
 - apiGroups:
-  - config.config.dev
+  - config.dev
   resources:
   - configreloaders
   verbs:
@@ -22,7 +22,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - config.config.dev
+  - config.dev
   resources:
   - configreloaders/status
   verbs:
